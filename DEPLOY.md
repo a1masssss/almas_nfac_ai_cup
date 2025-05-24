@@ -12,9 +12,6 @@ DB_PASSWORD=ваш_реальный_пароль_из_render
 
 ### 2. Добавьте API ключи
 
-Убедитесь, что в `src/.env` указаны правильные API ключи:
-- `OPENAI_API_KEY` - для OpenAI API
-- `API_KEY` - для Google Gemini API
 
 ## Деплой
 
@@ -44,8 +41,6 @@ DB_PASSWORD=ваш_реальный_пароль_из_render
 - `DEBUG=False`
 - `SECRET_KEY=your-secret-key`
 - `ALLOWED_HOSTS=your-app-name.onrender.com`
-- `OPENAI_API_KEY=your-openai-key`
-- `API_KEY=your-gemini-key`
 - Database variables будут добавлены автоматически при подключении PostgreSQL
 
 ### 3. Подключите базу данных
