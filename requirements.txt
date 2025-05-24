@@ -127,3 +127,6 @@ yarl==1.20.0
 youtube-transcript-api==1.0.3
 yt-dlp==2024.3.10
 zope.interface==7.2
+
+# Production server
+gunicorn==20.1.0
