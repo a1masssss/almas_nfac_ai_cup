@@ -90,10 +90,18 @@
 }
 </style>
 
+<!-- Video Progress Data -->
+<script type="application/json" id="video-progress-data">{{ video_progress|safe }}</script>
+
 <script>
-const playlistId = "{{ playlist_id }}";
+// Global variables
 let socket;
 let lessonCount = 0;
+
+const playlistId = "{{ playlist_id }}";
+
+// Load video progress data
+window.videoProgress = JSON.parse(document.getElementById('video-progress-data').textContent);
 
 // Initialize WebSocket connection
 function connectWebSocket() {
@@ -190,6 +198,38 @@ function renderVideo(data) {
     const videoElement = document.createElement("div");
     videoElement.className = "col-md-6 col-lg-4";
     
+    // Get progress data for this video from global variable
+    const progress = window.videoProgress[data.id] || {
+        has_quiz: false,
+        attempted: false,
+        passed: false,
+        score: 0
+    };
+    
+    // Determine quiz status badge
+    let quizBadge = '';
+    if (progress.has_quiz) {
+        if (progress.passed) {
+            quizBadge = '<div class="position-absolute top-0 start-0 p-2"><span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Quiz Passed</span></div>';
+        } else if (progress.attempted) {
+            quizBadge = '<div class="position-absolute top-0 start-0 p-2"><span class="badge bg-warning"><i class="bi bi-clock-fill me-1"></i>Quiz Attempted</span></div>';
+        } else {
+            quizBadge = '<div class="position-absolute top-0 start-0 p-2"><span class="badge bg-info"><i class="bi bi-patch-question-fill me-1"></i>Quiz Available</span></div>';
+        }
+    }
+    
+    // Progress indicator
+    let progressIndicator = '';
+    if (progress.has_quiz && progress.attempted) {
+        const progressColor = progress.passed ? 'success' : 'warning';
+        progressIndicator = `
+            <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar bg-${progressColor}" style="width: ${progress.score}%"></div>
+            </div>
+            <small class="text-muted">Best Score: ${Math.round(progress.score)}%</small>
+        `;
+    }
+    
     videoElement.innerHTML = `
         <div class="card h-100 shadow-sm">
             <div class="position-relative">
@@ -197,10 +237,11 @@ function renderVideo(data) {
                 <div class="position-absolute bottom-0 end-0 p-2">
                     <span class="badge bg-dark">Lesson ${lessonCount + 1}</span>
                 </div>
-                ${data.has_quiz ? '<div class="position-absolute top-0 start-0 p-2"><span class="badge bg-success"><i class="bi bi-patch-check"></i> Quiz Available</span></div>' : ''}
+                ${quizBadge}
             </div>
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title mb-3">${data.title}</h5>
+                ${progressIndicator}
                 <a href="/video/${data.id}/" class="btn btn-primary mt-auto">
                     <i class="bi bi-book me-1"></i> View Lesson
                 </a>
