@@ -18,38 +18,92 @@
                 </div>
             </div>
             
+            <!-- Video Player -->
             <div class="card shadow-sm border-0 mb-4 overflow-hidden">
                 <div class="ratio ratio-16x9">
                     <iframe src="https://www.youtube.com/embed/{{ video.video_id }}" allowfullscreen></iframe>
                 </div>
             </div>
             
-            <div class="row mb-4">
-                <div class="col-md-6 mb-4 mb-md-0">
-                    <div class="card shadow-sm border-0 h-100 bg-light">
-                        <div class="card-header bg-light border-0 pt-4 pb-0">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-lightning-fill text-primary me-2"></i>
-                                <h5 class="card-title mb-0">Key Takeaways</h5>
-                            </div>
-                        </div>
-                        <div class="card-body p-4">
-                            <p class="card-text">{{ video.summary|default:"No summary available for this lesson." }}</p>
-                        </div>
-                    </div>
+            <!-- Tabs Navigation -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <ul class="nav nav-tabs card-header-tabs" id="lessonTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab" aria-controls="summary" aria-selected="true">
+                                <i class="bi bi-lightning-fill me-2"></i>Key Takeaways
+                            </button>
+                        </li>
+                        {% if video.quiz_data %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="quiz-tab" data-bs-toggle="tab" data-bs-target="#quiz" type="button" role="tab" aria-controls="quiz" aria-selected="false">
+                                <i class="bi bi-brain me-2"></i>Knowledge Check
+                                <span class="badge bg-success ms-1">Available</span>
+                            </button>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="transcript-tab" data-bs-toggle="tab" data-bs-target="#transcript" type="button" role="tab" aria-controls="transcript" aria-selected="false">
+                                <i class="bi bi-card-text me-2"></i>Full Transcript
+                            </button>
+                        </li>
+                    </ul>
                 </div>
                 
-                <div class="col-md-6">
-                    <div class="card shadow-sm border-0 h-100">
-                        <div class="card-header bg-white border-0 pt-4 pb-0">
-                            <div class="d-flex align-items-center">
-                                <i class="bi bi-card-text text-primary me-2"></i>
-                                <h5 class="card-title mb-0">Full Transcript</h5>
+                <!-- Tab Content -->
+                <div class="tab-content" id="lessonTabsContent">
+                    <!-- Summary Tab -->
+                    <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                        <div class="card-body p-4">
+                            <div class="summary-content">
+                                <p class="lead">{{ video.summary|default:"No summary available for this lesson." }}</p>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Quiz Tab -->
+                    {% if video.quiz_data %}
+                    <div class="tab-pane fade" id="quiz" role="tabpanel" aria-labelledby="quiz-tab">
+                        <div class="card-body p-4">
+                            <div id="quiz-start-screen">
+                                <div class="text-center py-4">
+                                    <div class="mb-4">
+                                        <i class="bi bi-brain display-4 text-success"></i>
+                                    </div>
+                                    <h4 class="mb-3">Test Your Knowledge</h4>
+                                    <p class="text-muted mb-4">Ready to check your understanding of this lesson? Take our interactive quiz!</p>
+                                    <button class="btn btn-success btn-lg" onclick="startQuiz()">
+                                        <i class="bi bi-play-circle me-2"></i>Start Quiz
+                                    </button>
+                                    <div id="quiz-results" class="mt-4" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <strong>Last Score:</strong> <span id="last-score">-</span>%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="quiz-content" style="display: none;">
+                                <!-- Quiz questions will be loaded here -->
+                            </div>
+                            
+                            <div id="quiz-footer" class="d-flex justify-content-between align-items-center mt-4" style="display: none;">
+                                <div id="quiz-progress">
+                                    <small class="text-muted">Question <span id="current-question">1</span> of <span id="total-questions">5</span></small>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="next-question" style="display: none;" onclick="nextQuestion()">
+                                    Next Question <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Transcript Tab -->
+                    <div class="tab-pane fade" id="transcript" role="tabpanel" aria-labelledby="transcript-tab">
                         <div class="card-body p-4">
                             <div class="transcript-container">
-                                <pre class="card-text transcript">{{ video.transcript|default:"Transcript not available for this lesson." }}</pre>
+                                <pre class="transcript">{{ video.transcript|default:"Transcript not available for this lesson." }}</pre>
                             </div>
                         </div>
                     </div>
@@ -95,17 +149,21 @@
 }
 
 .transcript-container {
-    max-height: 400px;
+    max-height: 500px;
     overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
 }
 
 pre.transcript {
     white-space: pre-wrap;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 0.95rem;
     background: none;
     padding: 0;
     margin: 0;
+    line-height: 1.6;
 }
 
 .btn-outline-primary {
@@ -122,5 +180,416 @@ pre.transcript {
     border-color: #3d7cf4;
     box-shadow: 0 4px 8px rgba(44, 107, 223, 0.2);
 }
+
+/* Tab Styles */
+.nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: #3d7cf4;
+    background: rgba(61, 124, 244, 0.1);
+}
+
+.nav-tabs .nav-link.active {
+    color: #3d7cf4;
+    background: none;
+    border-color: #3d7cf4;
+    font-weight: 600;
+}
+
+.tab-content {
+    min-height: 400px;
+}
+
+.summary-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+/* Quiz Styles */
+.quiz-option {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid #e9ecef !important;
+}
+
+.quiz-option:hover {
+    background-color: #f8f9fa;
+    border-color: #3d7cf4 !important;
+}
+
+.quiz-option.selected {
+    border-color: #3d7cf4 !important;
+    background-color: rgba(61, 124, 244, 0.1);
+}
+
+.quiz-option.correct {
+    background-color: #d1e7dd !important;
+    border-color: #198754 !important;
+    color: #0f5132;
+}
+
+.quiz-option.incorrect {
+    background-color: #f8d7da !important;
+    border-color: #dc3545 !important;
+    color: #721c24;
+}
+
+.quiz-option.show-correct {
+    border-color: #198754 !important;
+    border-width: 3px !important;
+}
 </style>
+
+<!-- Quiz Data -->
+{% if video.quiz_data %}
+{{ video.quiz_data|json_script:"quiz-data" }}
+{% endif %}
+
+<script>
+// Quiz functionality
+let currentQuiz = null;
+let currentQuestionIndex = 0;
+let userAnswers = [];
+let correctAnswers = 0;
+
+function startQuiz() {
+    const quizDataElement = document.getElementById('quiz-data');
+    if (!quizDataElement) {
+        console.error('Quiz data element not found');
+        showQuizError('Quiz data not available. Please try refreshing the page.');
+        return;
+    }
+    
+    try {
+        // Django's json_script creates a script tag with JSON content
+        // We can directly parse the textContent
+        const rawData = quizDataElement.textContent;
+        console.log('Raw quiz data:', rawData);
+        
+        // Parse quiz data directly (Django's json_script ensures it's valid JSON)
+        currentQuiz = JSON.parse(rawData);
+        console.log('Parsed quiz data:', currentQuiz);
+        
+        // Comprehensive validation
+        if (!currentQuiz || typeof currentQuiz !== 'object') {
+            throw new Error('Quiz data is not a valid object');
+        }
+        
+        if (!currentQuiz.questions || !Array.isArray(currentQuiz.questions)) {
+            throw new Error('Quiz data missing valid questions array');
+        }
+        
+        if (currentQuiz.questions.length === 0) {
+            throw new Error('No questions found in quiz data');
+        }
+        
+        // Validate each question
+        const validQuestions = [];
+        for (let i = 0; i < currentQuiz.questions.length; i++) {
+            const question = currentQuiz.questions[i];
+            
+            if (!question || typeof question !== 'object') {
+                console.warn(`Question ${i + 1} is not a valid object, skipping`);
+                continue;
+            }
+            
+            if (!question.question || typeof question.question !== 'string') {
+                console.warn(`Question ${i + 1} missing valid question text, skipping`);
+                continue;
+            }
+            
+            if (!question.options || !Array.isArray(question.options)) {
+                console.warn(`Question ${i + 1} missing valid options array, skipping`);
+                continue;
+            }
+            
+            if (question.options.length < 2) {
+                console.warn(`Question ${i + 1} has less than 2 options, skipping`);
+                continue;
+            }
+            
+            // Validate options
+            const validOptions = [];
+            let hasCorrectAnswer = false;
+            
+            for (let j = 0; j < question.options.length; j++) {
+                const option = question.options[j];
+                
+                if (!option || typeof option !== 'object') {
+                    console.warn(`Question ${i + 1}, option ${j + 1} is not valid, skipping`);
+                    continue;
+                }
+                
+                if (!option.text || typeof option.text !== 'string') {
+                    console.warn(`Question ${i + 1}, option ${j + 1} missing text, skipping`);
+                    continue;
+                }
+                
+                // Ensure correct field exists and is boolean
+                if (typeof option.correct !== 'boolean') {
+                    option.correct = false;
+                }
+                
+                if (option.correct) {
+                    hasCorrectAnswer = true;
+                }
+                
+                validOptions.push(option);
+            }
+            
+            // Ensure at least one correct answer
+            if (!hasCorrectAnswer && validOptions.length > 0) {
+                validOptions[0].correct = true;
+            }
+            
+            if (validOptions.length >= 2) {
+                question.options = validOptions;
+                validQuestions.push(question);
+            }
+        }
+        
+        if (validQuestions.length === 0) {
+            throw new Error('No valid questions found after validation');
+        }
+        
+        currentQuiz.questions = validQuestions;
+        
+        // Initialize quiz state
+        currentQuestionIndex = 0;
+        userAnswers = [];
+        correctAnswers = 0;
+        
+        // Hide start screen, show quiz content
+        document.getElementById('quiz-start-screen').style.display = 'none';
+        document.getElementById('quiz-content').style.display = 'block';
+        document.getElementById('quiz-footer').style.display = 'flex';
+        
+        // Initialize quiz UI
+        document.getElementById('total-questions').textContent = currentQuiz.questions.length;
+        document.getElementById('current-question').textContent = 1;
+        
+        // Show first question
+        renderQuestion(currentQuiz.questions[0], 0);
+        
+        console.log(`Quiz started successfully with ${currentQuiz.questions.length} questions`);
+        
+    } catch (error) {
+        console.error('Error starting quiz:', error);
+        console.error('Quiz data content:', quizDataElement ? quizDataElement.textContent : 'No element');
+        
+        showQuizError(`Error loading quiz: ${error.message}. Please try refreshing the page.`);
+    }
+}
+
+function showQuizError(message) {
+    // Hide start screen, show error in quiz content
+    document.getElementById('quiz-start-screen').style.display = 'none';
+    document.getElementById('quiz-content').style.display = 'block';
+    document.getElementById('quiz-content').innerHTML = `
+        <div class="alert alert-danger">
+            <h5><i class="bi bi-exclamation-triangle me-2"></i>Quiz Loading Error</h5>
+            <p>${message}</p>
+            <p>This might be due to:</p>
+            <ul>
+                <li>Invalid quiz format generated by AI</li>
+                <li>Network connectivity issues</li>
+                <li>Server processing errors</li>
+                <li>Browser compatibility issues</li>
+            </ul>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-primary" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Refresh Page
+                </button>
+                <button class="btn btn-outline-secondary" onclick="backToStart()">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Start
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function renderQuestion(question, index) {
+    const quizContent = document.getElementById('quiz-content');
+    
+    const optionsHtml = question.options.map((option, i) => `
+        <div class="form-check mb-3 p-3 border rounded quiz-option" data-option="${i}">
+            <input class="form-check-input" type="radio" name="question${index}" id="option${i}" value="${i}">
+            <label class="form-check-label w-100" for="option${i}">
+                <strong>Option ${String.fromCharCode(65 + i)}:</strong> ${option.text}
+            </label>
+        </div>
+    `).join('');
+    
+    quizContent.innerHTML = `
+        <div class="quiz-question">
+            <h5 class="fw-bold mb-4 text-primary">Question ${index + 1}:</h5>
+            <p class="lead mb-4">${question.question}</p>
+            <div class="quiz-options">
+                ${optionsHtml}
+            </div>
+            <button class="btn btn-primary w-100 mt-4" onclick="submitAnswer(${index})">
+                <i class="bi bi-check-circle me-2"></i>Submit Answer
+            </button>
+        </div>
+    `;
+    
+    // Add click handlers for options
+    document.querySelectorAll('.quiz-option').forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove previous selections
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Highlight selected option
+            this.classList.add('selected');
+            
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+        });
+    });
+}
+
+function submitAnswer(questionIndex) {
+    const selectedOption = document.querySelector(`input[name="question${questionIndex}"]:checked`);
+    
+    if (!selectedOption) {
+        alert('Please select an answer!');
+        return;
+    }
+    
+    const selectedValue = parseInt(selectedOption.value);
+    userAnswers[questionIndex] = selectedValue;
+    
+    // Find correct answer
+    const question = currentQuiz.questions[questionIndex];
+    let correctAnswer = null;
+    
+    for (let i = 0; i < question.options.length; i++) {
+        if (question.options[i].correct) {
+            correctAnswer = i;
+            break;
+        }
+    }
+    
+    const isCorrect = selectedValue === correctAnswer;
+    if (isCorrect) {
+        correctAnswers++;
+    }
+    
+    // Show result
+    handleAnswerResult({
+        is_correct: isCorrect,
+        correct_answer: correctAnswer,
+        explanation: question.options[correctAnswer].text
+    });
+}
+
+function handleAnswerResult(data) {
+    const questionDiv = document.querySelector('.quiz-question');
+    const isCorrect = data.is_correct;
+    
+    // Highlight correct/incorrect answer
+    const options = document.querySelectorAll('.quiz-option');
+    options.forEach((option, index) => {
+        const radio = option.querySelector('input');
+        option.classList.remove('selected');
+        
+        if (radio.checked) {
+            option.classList.add(isCorrect ? 'correct' : 'incorrect');
+        }
+        if (index === data.correct_answer && !radio.checked) {
+            option.classList.add('show-correct');
+        }
+    });
+    
+    // Show result message
+    const resultHtml = `
+        <div class="alert ${isCorrect ? 'alert-success' : 'alert-warning'} mt-4">
+            <i class="bi bi-${isCorrect ? 'check-circle' : 'x-circle'} me-2"></i>
+            <strong>${isCorrect ? 'Correct!' : 'Incorrect!'}</strong>
+            ${!isCorrect ? `<br>The correct answer is: ${data.explanation}` : ' Well done!'}
+        </div>
+    `;
+    
+    questionDiv.insertAdjacentHTML('beforeend', resultHtml);
+    
+    // Hide submit button, show next button
+    questionDiv.querySelector('button').style.display = 'none';
+    
+    if (currentQuestionIndex < currentQuiz.questions.length - 1) {
+        document.getElementById('next-question').style.display = 'inline-block';
+    } else {
+        // Show final results
+        setTimeout(() => {
+            showFinalResults();
+        }, 2000);
+    }
+}
+
+function nextQuestion() {
+    currentQuestionIndex++;
+    document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+    document.getElementById('next-question').style.display = 'none';
+    
+    renderQuestion(currentQuiz.questions[currentQuestionIndex], currentQuestionIndex);
+}
+
+function showFinalResults() {
+    const percentage = Math.round((correctAnswers / currentQuiz.questions.length) * 100);
+    const grade = percentage >= 80 ? 'Excellent!' : percentage >= 60 ? 'Good Job!' : 'Keep Practicing!';
+    
+    document.getElementById('quiz-content').innerHTML = `
+        <div class="text-center py-5">
+            <div class="display-1 mb-4">
+                ${percentage >= 80 ? '🎉' : percentage >= 60 ? '👍' : '📚'}
+            </div>
+            <h3 class="mb-3 text-primary">${grade}</h3>
+            <p class="lead mb-4">You answered <strong>${correctAnswers}</strong> out of <strong>${currentQuiz.questions.length}</strong> questions correctly</p>
+            <div class="progress mb-4" style="height: 30px;">
+                <div class="progress-bar ${percentage >= 80 ? 'bg-success' : percentage >= 60 ? 'bg-warning' : 'bg-danger'}" 
+                     style="width: ${percentage}%">
+                    <strong>${percentage}%</strong>
+                </div>
+            </div>
+            <div class="d-flex gap-3 justify-content-center">
+                <button class="btn btn-primary" onclick="resetQuiz()">
+                    <i class="bi bi-arrow-clockwise me-2"></i>Try Again
+                </button>
+                <button class="btn btn-outline-secondary" onclick="backToStart()">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Start
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Update quiz results display
+    document.getElementById('last-score').textContent = percentage;
+    document.getElementById('quiz-results').style.display = 'block';
+    
+    document.getElementById('quiz-footer').style.display = 'none';
+}
+
+function resetQuiz() {
+    startQuiz();
+}
+
+function backToStart() {
+    document.getElementById('quiz-content').style.display = 'none';
+    document.getElementById('quiz-footer').style.display = 'none';
+    document.getElementById('quiz-start-screen').style.display = 'block';
+}
+</script>
 {% endblock %}

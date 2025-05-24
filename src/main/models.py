@@ -16,3 +16,4 @@ class Video(models.Model):
     thumbnail = models.URLField()
     transcript = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
+    quiz_data = models.JSONField(blank=True, null=True)

@@ -131,6 +131,18 @@ function connectWebSocket() {
             document.getElementById("course-title-header").textContent = title;
             document.title = `${title} - Make Courses`;
         }
+        else if (data.type === "processing_status") {
+            // Update loading message with current processing status
+            const loadingDiv = document.getElementById("loading");
+            loadingDiv.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-muted">${data.message}</p>
+                </div>
+            `;
+        }
         else if (data.type === "processing_complete") {
             // Hide loading indicator when processing is complete
             document.getElementById("loading").style.display = "none";
@@ -177,6 +189,7 @@ function renderVideo(data) {
     const output = document.getElementById("output");
     const videoElement = document.createElement("div");
     videoElement.className = "col-md-6 col-lg-4";
+    
     videoElement.innerHTML = `
         <div class="card h-100 shadow-sm">
             <div class="position-relative">
@@ -184,6 +197,7 @@ function renderVideo(data) {
                 <div class="position-absolute bottom-0 end-0 p-2">
                     <span class="badge bg-dark">Lesson ${lessonCount + 1}</span>
                 </div>
+                ${data.has_quiz ? '<div class="position-absolute top-0 start-0 p-2"><span class="badge bg-success"><i class="bi bi-patch-check"></i> Quiz Available</span></div>' : ''}
             </div>
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title mb-3">${data.title}</h5>
