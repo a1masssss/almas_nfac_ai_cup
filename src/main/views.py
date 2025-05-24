@@ -41,7 +41,17 @@ def playlist_detail_view(request, pk):
 
 def video_detail_view(request, pk):
     video = Video.objects.get(pk=pk)
-    return render(request, "main/video_detail.html", {"video": video})
+    
+    # Serialize quiz data to JSON string for the template
+    quiz_data_json = None
+    if video.quiz_data:
+        import json
+        quiz_data_json = json.dumps(video.quiz_data)
+    
+    return render(request, "main/video_detail.html", {
+        "video": video,
+        "quiz_data_json": quiz_data_json
+    })
 
 
 def my_courses_view(request):
