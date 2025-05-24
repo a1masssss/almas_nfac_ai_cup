@@ -1,0 +1,75 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-xl-8">
+            <div class="card shadow-sm border-0 overflow-hidden">
+                <div class="row g-0">
+                    <div class="col-md-6 d-none d-md-block">
+                        <img src="{% static 'images/issak_image_2.png' %}" 
+                             alt="Signup Illustration" 
+                             class="img-fluid" 
+                             style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="col-md-6 d-flex align-items-center">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="text-center mb-4">
+                                <h1 class="fw-bold h3">Create your Make Courses Account</h1>
+                                <p class="text-muted">Join us! Please fill in the details to get started.</p>
+                            </div>
+
+                            <form method="POST">
+                                {% csrf_token %}
+                                {{ form|crispy }}
+                                
+                                <div class="d-grid mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
+                                </div>
+                            </form>
+
+                            <div class="d-flex align-items-center my-4">
+                                <div class="flex-grow-1 border-bottom"></div>
+                                <div class="px-3 text-muted small">OR</div>
+                                <div class="flex-grow-1 border-bottom"></div>
+                            </div>
+
+                            {# Add social login buttons here if you have them #}
+                            {# Example: 
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-outline-dark" type="button">
+                                    <i class="bi bi-google me-2"></i> Continue with Google
+                                </button>
+                                <button class="btn btn-outline-dark" type="button">
+                                    <i class="bi bi-github me-2"></i> Continue with GitHub
+                                </button>
+                            </div> 
+                            #}
+
+                            <div class="text-center mt-3">
+                                <p class="text-muted small">
+                                    Already have an account? <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-medium">Sign in</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+body, html {
+    height: auto; 
+}
+.content-wrapper {
+    display: flex;
+    align-items: center; 
+}
+</style>
+{% endblock %}
+
+{% block title %}Sign Up - Make Courses{% endblock %} 

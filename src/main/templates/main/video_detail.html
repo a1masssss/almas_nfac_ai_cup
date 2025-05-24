@@ -1,0 +1,126 @@
+{% extends "main/base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none"><i class="bi bi-house-door me-1"></i>Home</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:history.back()" class="text-decoration-none"><i class="bi bi-collection me-1"></i>Back to Course</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Lesson</li>
+                </ol>
+            </nav>
+            
+            <div class="lesson-header mb-4">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-primary me-3">Lesson</span>
+                    <h2 class="mb-0">{{ video.title }}</h2>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm border-0 mb-4 overflow-hidden">
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/{{ video.video_id }}" allowfullscreen></iframe>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <div class="card shadow-sm border-0 h-100 bg-light">
+                        <div class="card-header bg-light border-0 pt-4 pb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-lightning-fill text-primary me-2"></i>
+                                <h5 class="card-title mb-0">Key Takeaways</h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <p class="card-text">{{ video.summary|default:"No summary available for this lesson." }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-0 pt-4 pb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-card-text text-primary me-2"></i>
+                                <h5 class="card-title mb-0">Full Transcript</h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="transcript-container">
+                                <pre class="card-text transcript">{{ video.transcript|default:"Transcript not available for this lesson." }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="javascript:history.back()" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-left me-2"></i> Back to Course
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.lesson-header h2 {
+    font-weight: 600;
+    font-size: 1.75rem;
+}
+
+.badge {
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+
+.breadcrumb-item a {
+    color: #3d7cf4;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: #6c757d;
+}
+
+.card-title {
+    font-weight: 500;
+}
+
+.transcript-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+pre.transcript {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 1rem;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+
+.btn-outline-primary {
+    color: #3d7cf4;
+    border-color: #3d7cf4;
+    padding: 0.5rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #3d7cf4;
+    border-color: #3d7cf4;
+    box-shadow: 0 4px 8px rgba(44, 107, 223, 0.2);
+}
+</style>
+{% endblock %}
