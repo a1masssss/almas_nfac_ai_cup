@@ -18,6 +18,10 @@ class Video(models.Model):
     transcript = models.TextField(blank=True, null=True)
     summary = models.TextField(blank=True, null=True)
     quiz_data = models.JSONField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)  # Order of video in playlist
+
+    class Meta:
+        ordering = ['order']
 
 
 class QuizAttempt(models.Model):

@@ -68,9 +68,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Home</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'my_courses' %}"><i class="bi bi-collection me-1"></i>My Courses</a>
                     </li>
                 </ul>
@@ -80,6 +77,19 @@
 
     <!-- Main Content -->
     <div class="content-wrapper">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% elif message.tags == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         {% block content %}
         {% endblock %}
     </div>
@@ -87,7 +97,7 @@
     <!-- Footer -->
     <footer class="text-center text-muted">
         <div class="container">
-            <p class="mb-0">Make Courses &copy; 2023</p>
+            <p class="mb-0">Make Courses &copy; 2025</p>
         </div>
     </footer>
     

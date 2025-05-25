@@ -74,7 +74,7 @@ class PlaylistConsumer(AsyncWebsocketConsumer):
         # No videos yet, so fetch them from YouTube
         videos = await sync_to_async(fetch_playlist_videos)(playlist_url)
 
-        for video_data in videos:
+        for index, video_data in enumerate(videos):
             # Check if this video already exists in the database (to avoid duplicates)
             existing_video = await sync_to_async(
                 lambda: Video.objects.filter(playlist=playlist, video_id=video_data["id"]).first()
@@ -89,7 +89,8 @@ class PlaylistConsumer(AsyncWebsocketConsumer):
                 playlist=playlist,
                 title=video_data["title"],
                 video_id=video_data["id"],
-                thumbnail=f'https://img.youtube.com/vi/{video_data["id"]}/maxresdefault.jpg'
+                thumbnail=f'https://img.youtube.com/vi/{video_data["id"]}/maxresdefault.jpg',
+                order=index  # Set order based on position in playlist
             )
 
             # Get and store transcript and summary

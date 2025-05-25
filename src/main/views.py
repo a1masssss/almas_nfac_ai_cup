@@ -6,6 +6,7 @@ from .models import Playlist, Video, QuizAttempt, QuizAnswer
 import sys
 import os
 import json
+from django.contrib import messages
 
 # Ensure src directory is in the path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -45,35 +46,88 @@ def playlist_detail_view(request, pk):
     playlist = Playlist.objects.get(pk=pk)
     user_session = get_user_session(request)
     
-    # Get all videos for this playlist with quiz progress
-    videos = Video.objects.filter(playlist=playlist)
+    # Get all videos for this playlist ordered by order field
+    videos = Video.objects.filter(playlist=playlist).order_by('order')
     video_progress = {}
+    videos_data = []
     
-    for video in videos:
+    # Track if previous video was passed
+    previous_video_passed = True  # First video is always unlocked
+    
+    for index, video in enumerate(videos):
         # Get the latest quiz attempt for this video
         latest_attempt = QuizAttempt.objects.filter(
             video=video, 
             user_session=user_session
         ).first()
         
+        # Check if this video should be locked
+        is_locked = False
+        if index > 0:  # Not the first video
+            # Check if previous video has a quiz and if it was passed
+            previous_video = videos[index - 1]
+            if previous_video.quiz_data:  # Previous video has a quiz
+                previous_attempt = QuizAttempt.objects.filter(
+                    video=previous_video,
+                    user_session=user_session,
+                    percentage__gte=50  # At least 50% to unlock next video
+                ).first()
+                is_locked = not bool(previous_attempt)
+            # If previous video has no quiz, it's automatically unlocked
+        
         video_progress[str(video.id)] = {
             'has_quiz': bool(video.quiz_data),
             'attempted': bool(latest_attempt),
             'passed': latest_attempt.is_passed if latest_attempt else False,
             'score': latest_attempt.percentage if latest_attempt else 0,
-            'last_attempt': latest_attempt.completed_at if latest_attempt else None
+            'last_attempt': latest_attempt.completed_at if latest_attempt else None,
+            'is_locked': is_locked,
+            'order': index + 1
         }
+        
+        # Add video data for immediate display
+        videos_data.append({
+            'id': str(video.id),
+            'title': video.title,
+            'thumbnail': video.thumbnail,
+            'has_quiz': bool(video.quiz_data)
+        })
     
     return render(request, "main/playlist_detail.html", {
+        "playlist": playlist,
         "playlist_id": playlist.id,
         "playlist_url": playlist.url,
         "video_progress": video_progress,
+        "videos_data": videos_data,
+        "has_videos": len(videos) > 0,
     })
 
 
 def video_detail_view(request, pk):
     video = Video.objects.get(pk=pk)
     user_session = get_user_session(request)
+    
+    # Check if this video is locked
+    playlist_videos = Video.objects.filter(playlist=video.playlist).order_by('order')
+    video_index = None
+    for index, v in enumerate(playlist_videos):
+        if v.id == video.id:
+            video_index = index
+            break
+    
+    # Check if video should be locked
+    if video_index and video_index > 0:  # Not the first video
+        previous_video = playlist_videos[video_index - 1]
+        if previous_video.quiz_data:  # Previous video has a quiz
+            previous_attempt = QuizAttempt.objects.filter(
+                video=previous_video,
+                user_session=user_session,
+                percentage__gte=50  # At least 50% to unlock next video
+            ).first()
+            if not previous_attempt:
+                # Video is locked, redirect to playlist with error message
+                messages.error(request, f'You need to complete the previous lesson with at least 50% score to unlock this lesson.')
+                return redirect('playlist_detail', pk=video.playlist.id)
     
     # Serialize quiz data to JSON string for the template
     quiz_data_json = None
@@ -194,32 +248,33 @@ def get_quiz_history_view(request, video_id):
 
 
 def my_courses_view(request):
-    # Get all playlists from the database
-    playlists = Playlist.objects.all().order_by('-created_at')
+    # Get all playlists from the database with prefetched videos
+    playlists = Playlist.objects.prefetch_related('videos').order_by('-created_at')
     user_session = get_user_session(request)
     
     # For each playlist, get the count of videos and progress
     for playlist in playlists:
-        videos = Video.objects.filter(playlist=playlist)
-        playlist.video_count = videos.count()
+        videos = playlist.videos.all()  # Use prefetched videos
+        playlist.video_count = len(videos)
         
         # Calculate progress
-        videos_with_quiz = videos.filter(quiz_data__isnull=False)
-        playlist.quiz_count = videos_with_quiz.count()
+        videos_with_quiz = [v for v in videos if v.quiz_data]
+        playlist.quiz_count = len(videos_with_quiz)
         
-        # Count passed quizzes
-        passed_count = 0
-        for video in videos_with_quiz:
-            latest_attempt = QuizAttempt.objects.filter(
-                video=video, 
+        # Count passed quizzes - get all attempts at once
+        if videos_with_quiz:
+            video_ids = [v.id for v in videos_with_quiz]
+            passed_attempts = QuizAttempt.objects.filter(
+                video_id__in=video_ids,
                 user_session=user_session,
                 is_passed=True
-            ).first()
-            if latest_attempt:
-                passed_count += 1
-        
-        playlist.passed_count = passed_count
-        playlist.progress_percentage = (passed_count / playlist.quiz_count * 100) if playlist.quiz_count > 0 else 0
+            ).values_list('video_id', flat=True).distinct()
+            
+            playlist.passed_count = len(passed_attempts)
+        else:
+            playlist.passed_count = 0
+            
+        playlist.progress_percentage = (playlist.passed_count / playlist.quiz_count * 100) if playlist.quiz_count > 0 else 0
     
     return render(request, "main/my_courses.html", {"playlists": playlists})
 
